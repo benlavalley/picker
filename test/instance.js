@@ -87,6 +87,68 @@ Tinytest.add('middlewares - with filtered routes', function(test) {
   test.equal(res.content, "ok");
 });
 
+Tinytest.add('middlewares - with several filtered routes', function(test) {
+  var path1 = "/" + Random.id() + "/coola";
+  var path2 = "/" + Random.id() + "/coola";
+
+  var router1 = Picker.filter();
+  var router2 = Picker.filter();
+
+  const increaseResultBy = (i) => (req, res, next) => {
+    setTimeout(function() {
+      req.result = req.result || 0;
+      req.result += i;
+      next();
+    }, 100);
+  };
+
+  router1.middleware(increaseResultBy(1));
+  router2.middleware(increaseResultBy(2));
+
+  Picker.middleware(increaseResultBy(10));
+
+  router1.route(path1, function(params, req, res) {
+    res.end(req.result+'');
+  });
+  router2.route(path2, function(params, req, res) {
+    res.end(req.result+'');
+  });
+
+  var res = HTTP.get(getPath(path1));
+  test.equal(res.content, "11");
+
+  var res = HTTP.get(getPath(path2));
+  test.equal(res.content, "12");
+});
+
+Tinytest.add('subrouter handle routes in the order routes have been defined', function(test) {
+  var path1 = "/" + Random.id() + "/coola";
+  var path2 = "/" + Random.id() + "/coola";
+
+  var router1 = Picker.filter();
+  var router2 = Picker.filter();
+
+  router1.route(path1, function(params, req, res) {
+    res.end('router1');
+  });
+  router2.route(path1, function(params, req, res) {
+    res.end('router2');
+  });
+
+  router2.route(path2, function(params, req, res) {
+    res.end('router2');
+  });
+  router1.route(path2, function(params, req, res) {
+    res.end('router1');
+  });
+
+  var res = HTTP.get(getPath(path1));
+  test.equal(res.content, "router1");
+
+  var res = HTTP.get(getPath(path2));
+  test.equal(res.content, "router2");
+});
+
 var urlResolve = Npm.require('url').resolve;
 function getPath(path) {
   return urlResolve(process.env.ROOT_URL, path);
