@@ -1,12 +1,13 @@
 Package.describe({
   name: 'meteorhacks:picker',
   summary: 'Server Side Router for Meteor',
-  version: '1.0.6',
+  version: '1.0.7',
   git: 'https://github.com/meteorhacks/picker.git'
 });
 
 Npm.depends({
-  'path-to-regexp': '3.1.0'
+  'path-to-regexp': '5.0.0',
+  'url':'0.11.0'
 });
 
 Package.onUse(function(api) {
@@ -30,6 +31,6 @@ function configurePackage(api) {
   api.use(['webapp', 'underscore', 'ecmascript'], ['server']);
   api.addFiles([
     'lib/implementation.js',
-    'lib/instance.js',
   ], ['server']);
+  api.mainModule('lib/instance.js','server');
 }
